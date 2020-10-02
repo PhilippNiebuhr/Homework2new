@@ -316,6 +316,9 @@ approval_polllist <- read_csv(here::here('data', 'approval_polllist.csv'))
 
 glimpse(approval_polllist)
 
+approval_polllist<-approval_polllist %>% 
+  mutate(end_date = mdy(enddate))
+
 # Use `lubridate` to fix dates, as they are given as characters.
 ```
 
@@ -323,18 +326,49 @@ glimpse(approval_polllist)
 
 What I would like you to do is to calculate the average net approval rate (approve- disapprove) for each week since he got into office. I want you plot the net approval, along with its 95% confidence interval. There are various dates given for each poll, please use `enddate`, i.e., the date the poll ended.
 
-
-
 You can facet by year, and add an orange line at zero. Your plot should look like this:
 
 ```{r trump_margins, echo=FALSE, out.width="100%"}
 knitr::include_graphics(here::here("images", "trump_approval_margin.png"), error = FALSE)
+
+library(sjstats)
+approval_polllist<-approval_polllist %>% 
+  mutate(net_approve=approve-disapprove,
+         year=year(end_date),
+         enddate_week=week(end_date))
+
+CI_approval<-approval_polllist %>%
+  group_by(year,enddate_week) %>%
+  summarise(mean_net_approve = mean(net_approve),
+  sd_net_approve = sd(net_approve),
+  count=n(),
+  se_net_approve = parameters::standard_error(net_approve),
+  net_approve_low = mean_net_approve - se_net_approve*qt(0.95, count-1),
+  net_approve_high = mean_net_approve + se_net_approve*qt(0.95, count-1))
+
+cbp1 <- c("2017"="palevioletred","2018" ="seagreen","2019"= "deepskyblue","2020"= "violet")
+
+ggplot(CI_approval,aes(x=enddate_week, y = mean_net_approve,color=as.factor(year)))+
+  geom_point(size=1)+
+  geom_line()+
+  labs (
+    title = "Estimating Net Approval (approve-disapprove) for Donald Trump",
+    subtitle="weekly average of all polls",
+    x= 'Week of the year', y = "Average Net Approval(%)")+
+  scale_x_continuous(breaks = c(13,26,39,52))+
+  scale_y_continuous(breaks = c(-20,-17.5,-15,-12.5,-10,-7.5,-5,-2.5,0,2.5,5,7.5))+
+  facet_wrap(~year)+
+  scale_fill_manual(values = cbp1,guide = FALSE)+
+  scale_color_manual(values = cbp1,guide = FALSE)+
+  geom_ribbon(aes(ymax = net_approve_high, ymin = net_approve_low,fill=factor(year)),alpha=0.3)
+
 ```
 
 ## Compare Confidence Intervals
 
 Compare the confidence intervals for `week 15` (6-12 April 2020) and `week 34` (17-23 August 2020). Can you explain what's going on? One paragraph would be enough.
 
+Confidence interval for week 15 gives a higher estimation of population mean than week 34, while it has a wider range than week 34. This is perhaps because Trump gave a higher net approval rate during week 15 than 34, and standard deviation in week 34 is also higher.
 
 # Gapminder revisited
 
@@ -354,7 +388,7 @@ You must use the `wbstats` package to download data from the World Bank. The rel
 
 # load gapminder HIV data
 hiv <- read_csv(here::here("data","adults_with_hiv_percent_age_15_49.csv"))
-life_expectancy <- read_csv(here::here("data","life_expectancy_years.csv"))
+life_expectancy <- read.csv(here::here("data","life_expectancy_years.csv"))
 
 # get World bank data using wbstats
 indicators <- c("SP.DYN.TFRT.IN","SE.PRM.NENR", "SH.DYN.MORT", "NY.GDP.PCAP.KD")
