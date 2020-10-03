@@ -368,6 +368,7 @@ ggplot(CI_approval,aes(x=enddate_week, y = mean_net_approve,color=as.factor(year
 
 Compare the confidence intervals for `week 15` (6-12 April 2020) and `week 34` (17-23 August 2020). Can you explain what's going on? One paragraph would be enough.
 
+Confidence interval for week 15 gives a higher estimation of population mean than week 34, while it has a wider range than week 34. This is perhaps because Trump gave a higher net approval rate during week 15 than 34, and standard deviation in week 34 is also higher.
 
 # Gapminder revisited
 
@@ -387,7 +388,7 @@ You must use the `wbstats` package to download data from the World Bank. The rel
 
 # load gapminder HIV data
 hiv <- read_csv(here::here("data","adults_with_hiv_percent_age_15_49.csv"))
-life_expectancy <- read_csv(here::here("data","life_expectancy_years.csv"))
+life_expectancy <- read.csv(here::here("data","life_expectancy_years.csv"))
 
 # get World bank data using wbstats
 indicators <- c("SP.DYN.TFRT.IN","SE.PRM.NENR", "SH.DYN.MORT", "NY.GDP.PCAP.KD")
