@@ -23,3 +23,5 @@ httr
 readxl
 vroom
 wbstats
+infer
+sjstats
